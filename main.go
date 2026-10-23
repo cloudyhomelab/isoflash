@@ -1,4 +1,4 @@
-// Command write-iso-usb writes an ISO image to a USB drive from a terminal UI.
+// Command isoflash writes an ISO image to a USB drive from a terminal UI.
 package main
 
 import (
@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if os.Geteuid() != 0 {
-		fmt.Fprintf(os.Stderr, "write-iso-usb writes to raw drives and must run as root:\n  sudo %s\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "isoflash writes to raw drives and must run as root:\n  sudo %s\n", os.Args[0])
 		os.Exit(1)
 	}
 	initial := newModel()

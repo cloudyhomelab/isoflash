@@ -28,4 +28,4 @@ jobs:
 
       - run: go vet ./...
 
-      - run: go build -o write-iso-usb .
+      - run: go build -o isoflash .

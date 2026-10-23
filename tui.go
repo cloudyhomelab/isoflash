@@ -411,7 +411,7 @@ func (m model) startWrite() (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var b strings.Builder
-	b.WriteString(titleStyle.Render("write-iso-usb") + "  " + m.stepsView() + "\n\n")
+	b.WriteString(titleStyle.Render("isoflash") + "  " + m.stepsView() + "\n\n")
 	switch m.step {
 	case stepDrive:
 		b.WriteString(m.driveView())

@@ -1,4 +1,4 @@
-module write-iso-usb
+module isoflash
 
 go 1.27.0
 
