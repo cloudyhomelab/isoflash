@@ -25,20 +25,35 @@ MIB = 1024 * 1024
 
 
 def list_usb_disks():
+    # --list with PKNAME rather than the default tree: lsblk falls back to a flat
+    # list when it can't build the tree (e.g. in containers), which would hide
+    # mounted partitions.
     result = subprocess.run(
-        ["lsblk", "--json", "--bytes", "--output", "PATH,SIZE,MODEL,TRAN,RM,TYPE,MOUNTPOINTS"],
+        ["lsblk", "--json", "--list", "--bytes",
+         "--output", "NAME,PKNAME,PATH,SIZE,MODEL,TRAN,RM,TYPE,MOUNTPOINTS"],
         capture_output=True, text=True, check=True,
     )
     devices = json.loads(result.stdout)["blockdevices"]
+    mounts = mounts_by_disk(devices)
     # Older lsblk emits RM as the string "0"/"1", and "0" is truthy.
-    return [d for d in devices
-            if d["type"] == "disk" and (d["tran"] == "usb" or d["rm"] in (True, "1"))]
+    disks = [d for d in devices
+             if d["type"] == "disk" and (d["tran"] == "usb" or d["rm"] in (True, "1"))]
+    for d in disks:
+        d["mounts"] = mounts.get(d["name"], [])
+    return disks
 
 
-def mounted_partitions(disk):
-    mounts = [m for m in disk.get("mountpoints") or [] if m]
-    for child in disk.get("children") or []:
-        mounts += [m for m in child.get("mountpoints") or [] if m]
+def mounts_by_disk(devices):
+    """Map each top-level device name to the mount points of itself and everything below it."""
+    parents = {d["name"]: d["pkname"] for d in devices}
+    mounts = {}
+    for d in devices:
+        root = d["name"]
+        for _ in devices:
+            if not parents.get(root):
+                break
+            root = parents[root]
+        mounts.setdefault(root, []).extend(m for m in d["mountpoints"] or [] if m)
     return mounts
 
 
@@ -132,7 +147,7 @@ def main():
         sys.exit("No USB drives found.")
     disk = choose_disk(disks)
 
-    mounts = mounted_partitions(disk)
+    mounts = disk["mounts"]
     if mounts:
         sys.exit(f"{disk['path']} is mounted at {', '.join(mounts)}. Unmount it first.")
 
