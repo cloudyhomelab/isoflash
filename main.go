@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Sujoy Das
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Command isoflash writes an ISO image to a USB drive from a terminal UI.
 package main
 
